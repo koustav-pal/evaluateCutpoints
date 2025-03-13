@@ -312,7 +312,7 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
     high.cutoff = setCutpoint[2]
   }
   
-  
+  message("Passed 1")
   result.table.col.names <- c("Cutpoint 1", "Cutpoint 2", "Low", "Medium", "High")
   length.results <- biomarkerCountsThree(vector.biomarker, low.cutoff, high.cutoff)
   result.table.row.names <- c(low.cutoff, high.cutoff, as.character(length.results[2]), as.character(length.results[3]), as.character(length.results[4]))
@@ -327,12 +327,12 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
   category.df.lowhigh <- data.frame( subset( category.df, subset= category == "high" | category == "low" ))
   category.df.medhigh <- data.frame( subset( category.df, subset= category == "high" | category == "medium" ))
   
-  
+  message("Passed 2")
   fit <- do.call(
     survfit,
     list( formula = Surv( vector.survival, vector.event ) ~ category, data = category.df )
   )
-  
+  message("Passed 3")
   if (low.cutoff != high.cutoff) {
     
     lowhigh <- do.call(
@@ -349,7 +349,7 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
       survfit,
       list( formula = Surv( vector.survival, vector.event ) ~ category, data = category.df.medhigh)
     )
-    
+    message("Passed 3 - 1")
     cat.df <- data.frame( vector.biomarker, vector.survival, vector.event )
     
     categorize.low <- subset( cat.df, subset = vector.biomarker < low.cutoff | biomarker > high.cutoff )
@@ -378,7 +378,7 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
       coxph,
       list( formula = Surv( vector.survival, vector.event ) ~ category.high, data = cat.high)
     )
-    
+    message("Passed 3 - 2")
     groupEstimates <- function (group, summaryModel) {
       model <- summary( summaryModel )
       coef <- model$coefficients
@@ -409,7 +409,7 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
     ggsave(paste(biomarker, "MediumVsHigh.png"))
     lowmediumhighfit.plot <- ggsurvplot(fit, surv.col = c("#2c3e50", "Red", "Blue"))
     ggsave(paste(biomarker, "LowVsMediumVsHigh.png"))
-    
+    message("Passed 3 - 3")
     histogramPlotRolr <- ggplot(df, aes(x=vector.biomarker)) +
       geom_histogram(fill="#2c3e50") +
       geom_vline(aes(xintercept=low.cutoff)) +
