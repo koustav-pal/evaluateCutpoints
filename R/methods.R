@@ -352,33 +352,37 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
     message("Passed 3 - 1")
     cat.df <- data.frame( vector.biomarker, vector.survival, vector.event )
     
-    categorize.low <- subset( cat.df, subset = vector.biomarker < low.cutoff | vector.biomarker > high.cutoff )
-    category.low = ifelse( categorize.low$vector.biomarker < low.cutoff, "low", "high" )
-    cat.low <- data.frame( categorize.low, category.low )
-    
-    lowhigh.surv <- do.call(
-      coxph,
-      list( formula = Surv( vector.survival, vector.event ) ~ category.low, data = cat.low)
-    )
-    message("Passed 3 - 1 - 1")
-    categorize.med <- subset( cat.df, subset = vector.biomarker < high.cutoff )
-    category.med = ifelse( categorize.med$vector.biomarker < low.cutoff, "medium", "high" )
-    cat.med <- data.frame(categorize.med, category.med)
-    
-    lowmedium.surv <- do.call(
-      coxph,
-      list( formula = Surv( vector.survival, vector.event ) ~ category.med, data = cat.med)
-    )
-    message("Passed 3 - 1 - 2")
-    categorize.high <- subset( cat.df, subset = vector.biomarker > low.cutoff )
-    category.high = ifelse( categorize.high$vector.biomarker < high.cutoff, "medium", "high" )
-    cat.high <- data.frame( categorize.high, category.high )
-    
-    mediumhigh.surv <- do.call(
-      coxph,
-      list( formula = Surv( vector.survival, vector.event ) ~ category.high, data = cat.high)
-    )
-    message("Passed 3 - 1 - 3")
+    if(low.cutoff != min(vector.biomarker) & high.cutoff != max(vector.biomarker)){
+      categorize.low <- subset( cat.df, subset = vector.biomarker < low.cutoff | vector.biomarker > high.cutoff )
+      category.low = ifelse( categorize.low$vector.biomarker < low.cutoff, "low", "high" )
+      cat.low <- data.frame( categorize.low, category.low )
+      
+      lowhigh.surv <- do.call(
+        coxph,
+        list( formula = Surv( vector.survival, vector.event ) ~ category.low, data = cat.low)
+      )
+      message("Passed 3 - 1 - 1")
+      categorize.med <- subset( cat.df, subset = vector.biomarker < high.cutoff )
+      category.med = ifelse( categorize.med$vector.biomarker < low.cutoff, "medium", "high" )
+      cat.med <- data.frame(categorize.med, category.med)
+      
+      lowmedium.surv <- do.call(
+        coxph,
+        list( formula = Surv( vector.survival, vector.event ) ~ category.med, data = cat.med)
+      )
+      message("Passed 3 - 1 - 2")
+      categorize.high <- subset( cat.df, subset = vector.biomarker > low.cutoff )
+      category.high = ifelse( categorize.high$vector.biomarker < high.cutoff, "medium", "high" )
+      cat.high <- data.frame( categorize.high, category.high )
+      
+      mediumhigh.surv <- do.call(
+        coxph,
+        list( formula = Surv( vector.survival, vector.event ) ~ category.high, data = cat.high)
+      )
+      message("Passed 3 - 1 - 3")
+    }else{
+      message("Skipping cox-ph step as proper low.cutoff or high.cutoff equals the min max observed values...")
+    }
     message("Passed 3 - 2")
     groupEstimates <- function (group, summaryModel) {
       model <- summary( summaryModel )
