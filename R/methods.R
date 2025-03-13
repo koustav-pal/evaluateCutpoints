@@ -379,32 +379,33 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
         coxph,
         list( formula = Surv( vector.survival, vector.event ) ~ category.high, data = cat.high)
       )
+
+      groupEstimates <- function (group, summaryModel) {
+        model <- summary( summaryModel )
+        coef <- model$coefficients
+        HR <- signif(coef[ 2 ], digits = 3 )
+        q <- 1-(1-95/100)/2
+        z <- qnorm(q)
+        HR.lower <- signif( exp( coef[ 1 ] - z * coef[ 3 ]), digits = 3 )
+        HR.upper <- signif( exp( coef[ 1 ] + z * coef[ 3 ]), digits = 3 )
+        CI <- paste( " (", HR.lower, "-", HR.upper, ") " )
+        p <- signif( model$sctest[ "pvalue" ], digits = 3 )
+        estimates <- c(group,HR,CI, p)
+        return(estimates)
+      }
+
+      estimates.total.table <- rbind(
+        groupEstimates("Low vs High", lowhigh.surv),
+        groupEstimates("Low vs Medium", lowmedium.surv),
+        groupEstimates("Medium vs High", mediumhigh.surv)
+      )
+      colnames(estimates.total.table) <- c("Group", "HR", "CI", "p-value")
+      write.csv(estimates.total.table, file="EstimatesTable.csv")
       message("Passed 3 - 1 - 3")
     }else{
       message("Skipping cox-ph step as proper low.cutoff or high.cutoff equals the min max observed values...")
     }
     message("Passed 3 - 2")
-    groupEstimates <- function (group, summaryModel) {
-      model <- summary( summaryModel )
-      coef <- model$coefficients
-      HR <- signif(coef[ 2 ], digits = 3 )
-      q <- 1-(1-95/100)/2
-      z <- qnorm(q)
-      HR.lower <- signif( exp( coef[ 1 ] - z * coef[ 3 ]), digits = 3 )
-      HR.upper <- signif( exp( coef[ 1 ] + z * coef[ 3 ]), digits = 3 )
-      CI <- paste( " (", HR.lower, "-", HR.upper, ") " )
-      p <- signif( model$sctest[ "pvalue" ], digits = 3 )
-      estimates <- c(group,HR,CI, p)
-      return(estimates)
-    }
-    
-    estimates.total.table <- rbind(
-      groupEstimates("Low vs High", lowhigh.surv),
-      groupEstimates("Low vs Medium", lowmedium.surv),
-      groupEstimates("Medium vs High", mediumhigh.surv)
-    )
-    colnames(estimates.total.table) <- c("Group", "HR", "CI", "p-value")
-    write.csv(estimates.total.table, file="EstimatesTable.csv")
     
     lowmediumfit.plot <- ggsurvplot(lowmedium, surv.col = c( "Red", "Blue" ))
     ggsave(paste(biomarker, "LowVsMedium.png"))
