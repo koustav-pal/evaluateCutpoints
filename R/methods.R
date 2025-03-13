@@ -352,12 +352,16 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
     message("Passed 3 - 1")
     cat.df <- data.frame( vector.biomarker, vector.survival, vector.event )
     
+
     categorize.low <- subset( cat.df, subset = vector.biomarker < low.cutoff | biomarker > high.cutoff )
     category.low = ifelse( categorize.low$vector.biomarker < low.cutoff, "low", "high" )
     cat.low <- data.frame( categorize.low, category.low )
+    message(paste0(capture.output(cat.low), collapse = "\n"))
     message("High:", high.cutoff)
     message("Low:", low.cutoff)
     message(length(unique(category.low)))
+
+
     lowhigh.surv <- do.call(
       coxph,
       list( formula = Surv( vector.survival, vector.event ) ~ category.low, data = cat.low)
