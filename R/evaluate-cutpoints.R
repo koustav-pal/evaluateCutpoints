@@ -6,7 +6,7 @@
 #' @param biomarker Biomarker variable
 #' @return 2 folders for each biomarker with results
 
-defaultAnalyses <- function(df, time, event, biomarker) {
+defaultAnalyses <- function(df, time, event, biomarker, cutpoints) {
   numberOfGroups = c("2","3")
   setwd(biomarker)
   for (n in numberOfGroups) {
@@ -32,7 +32,7 @@ defaultAnalyses <- function(df, time, event, biomarker) {
     if (n == 3) {
       dir.create("rolr")
       setwd("rolr")
-      rolrMethod(setCutpoint, df, time, event, biomarker)
+      rolrMethod(cutpoints, df, time, event, biomarker)
       setwd('..')
     }
     setwd('..')
@@ -98,7 +98,7 @@ adaptCutpoint3groups <- function(setCutpoint, df, time, event, biomarker) {
 
 mainFunction <- function(cutpoints, df, time, event, biomarker) {
   if (is.null(cutpoints)) {
-    defaultAnalyses(df, time, event, biomarker)
+    defaultAnalyses(df, time, event, biomarker, cutpoints)
   } else if (length(cutpoints) == 1) {
     adaptCutpoint2groups(cutpoints, df, time, event, biomarker)
   } else if (length(cutpoints) == 2) {
