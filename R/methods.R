@@ -312,7 +312,6 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
     high.cutoff = setCutpoint[2]
   }
   
-  message("Passed 1")
   result.table.col.names <- c("Cutpoint 1", "Cutpoint 2", "Low", "Medium", "High")
   length.results <- biomarkerCountsThree(vector.biomarker, low.cutoff, high.cutoff)
   result.table.row.names <- c(low.cutoff, high.cutoff, as.character(length.results[2]), as.character(length.results[3]), as.character(length.results[4]))
@@ -327,12 +326,12 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
   category.df.lowhigh <- data.frame( subset( category.df, subset= category == "high" | category == "low" ))
   category.df.medhigh <- data.frame( subset( category.df, subset= category == "high" | category == "medium" ))
   
-  message("Passed 2")
+
   fit <- do.call(
     survfit,
     list( formula = Surv( vector.survival, vector.event ) ~ category, data = category.df )
   )
-  message("Passed 3")
+
   if (low.cutoff != high.cutoff) {
     
     lowhigh <- do.call(
@@ -349,7 +348,7 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
       survfit,
       list( formula = Surv( vector.survival, vector.event ) ~ category, data = category.df.medhigh)
     )
-    message("Passed 3 - 1")
+
     cat.df <- data.frame( vector.biomarker, vector.survival, vector.event )
     
     if(low.cutoff != min(vector.biomarker) & high.cutoff != max(vector.biomarker)){
@@ -361,7 +360,7 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
         coxph,
         list( formula = Surv( vector.survival, vector.event ) ~ category.low, data = cat.low)
       )
-      message("Passed 3 - 1 - 1")
+
       categorize.med <- subset( cat.df, subset = vector.biomarker < high.cutoff )
       category.med = ifelse( categorize.med$vector.biomarker < low.cutoff, "medium", "high" )
       cat.med <- data.frame(categorize.med, category.med)
@@ -370,7 +369,7 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
         coxph,
         list( formula = Surv( vector.survival, vector.event ) ~ category.med, data = cat.med)
       )
-      message("Passed 3 - 1 - 2")
+
       categorize.high <- subset( cat.df, subset = vector.biomarker > low.cutoff )
       category.high = ifelse( categorize.high$vector.biomarker < high.cutoff, "medium", "high" )
       cat.high <- data.frame( categorize.high, category.high )
@@ -401,11 +400,10 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
       )
       colnames(estimates.total.table) <- c("Group", "HR", "CI", "p-value")
       write.csv(estimates.total.table, file="EstimatesTable.csv")
-      message("Passed 3 - 1 - 3")
     }else{
       message("Skipping cox-ph step as proper low.cutoff or high.cutoff equals the min max observed values...")
     }
-    message("Passed 3 - 2")
+
     
     lowmediumfit.plot <- ggsurvplot(lowmedium, surv.col = c( "Red", "Blue" ))
     ggsave(paste(biomarker, "LowVsMedium.png"))
@@ -415,7 +413,7 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
     ggsave(paste(biomarker, "MediumVsHigh.png"))
     lowmediumhighfit.plot <- ggsurvplot(fit, surv.col = c("#2c3e50", "Red", "Blue"))
     ggsave(paste(biomarker, "LowVsMediumVsHigh.png"))
-    message("Passed 3 - 3")
+
     histogramPlotRolr <- ggplot(df, aes(x=vector.biomarker)) +
       geom_histogram(fill="#2c3e50") +
       geom_vline(aes(xintercept=low.cutoff)) +
@@ -423,8 +421,6 @@ rolrMethod <- function(setCutpoint, df, time, event, biomarker) {
     
     histogramRolrWithLabs <- histogramPlotRolr + labs(x=paste(biomarker))
     ggsave(paste(biomarker, "histogramRolr.png"))
-    
-    
   } else {
     print("Please select two distinct cutpoints.")
   }
